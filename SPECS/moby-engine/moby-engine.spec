@@ -49,7 +49,7 @@ Requires: docker-init
 Requires: iptables
 Requires: libcgroup
 Requires: libseccomp
-Requires: containerd
+Requires: containerd2
 Requires: tar
 Requires: xz
 
