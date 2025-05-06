@@ -3,7 +3,7 @@
 
 Name:         kata-containers-cc
 Version:      3.2.0.azl5
-Release:      2%{?dist}
+Release:      3%{?dist}
 Summary:      Kata Confidential Containers package developed for Confidential Containers on AKS
 License:      ASL 2.0
 URL:          https://github.com/microsoft/kata-containers
@@ -28,7 +28,6 @@ BuildRequires:  fuse-devel
 # kernel-uvm is required for debuggability, exercising confidential guest (confidential_guest=true)
 # code paths without actual SEV SNP enablement (sev_snp_guest=false)
 Requires:  kernel-uvm
-Requires:  moby-containerd-cc
 # Must match the version specified by the `assets.virtiofsd.version` field in the source's versions.yaml.
 Requires:  virtiofsd = 1.8.0
 
