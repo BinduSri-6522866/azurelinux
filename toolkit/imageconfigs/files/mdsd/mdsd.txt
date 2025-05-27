@@ -1,0 +1,36 @@
+### Geneva Linux Agent tenant settings file
+
+# Mandatory, unique identifier of your tenant; suggested value is your GCS namespace
+TENANT_NAME=TestAzLinuxCI
+MDSD_VAR=/var/opt/microsoft/azuremonitoragent
+MDSD_CONFIG_DIR=/etc/opt/microsoft/azuremonitoragent/${TENANT_NAME}
+MDSD_RUN_DIR=/var/run/azuremonitoragent/${TENANT_NAME}
+MDSD_ROLE_PREFIX=${MDSD_RUN_DIR}/default
+
+# MdsdMgr will place a logrotate policy file at /etc/logrotate.d/mdsd-${TENANT_NAME}
+MDSD_LOG=${MDSD_VAR}/log/${TENANT_NAME}
+
+# This is where rsyslog and eventhub messages are spooled.
+MDSD_SPOOL_DIRECTORY=${MDSD_VAR}/spool/${TENANT_NAME}
+
+# NOTE: Don't set TCP ports. Instead, use the UNIX domain sockets already available in the $MDSD_RUN_DIR directory; option –R will find an available port number.
+MDSD_OPTIONS="-A -c /etc/opt/microsoft/azuremonitoragent/mdsd.xml -C -R -r ${MDSD_ROLE_PREFIX} -S ${MDSD_SPOOL_DIRECTORY}/eh -e ${MDSD_LOG}/${TENANT_NAME}.err -w ${MDSD_LOG}/${TENANT_NAME}.warn -o ${MDSD_LOG}/${TENANT_NAME}.info -q ${MDSD_LOG}/${TENANT_NAME}.qos"
+
+# Identity settings
+MONITORING_TENANT=LinuxCodeIntegrity
+MONITORING_ROLE=TestVM
+MONITORING_ROLE_INSTANCE=TestInstance
+
+# GCS settings
+MONITORING_GCS_ENVIRONMENT=DiagnosticsProd
+MONITORING_GCS_ACCOUNT=CIAlertingTst
+MONITORING_GCS_NAMESPACE=TestAzLinuxCI
+MONITORING_GCS_REGION=westus
+MONITORING_CONFIG_VERSION=1.0
+MONITORING_USE_GENEVA_CONFIG_SERVICE=true
+MONITORING_GCS_AUTH_ID_TYPE=AuthMSIToken
+
+# In AuthMSIToken authentication mode, you may optionally specify the desired managed identity to use; specifying the identity becomes MANDATORY when you have multiple user-assigned managed identities assigned to the machine.
+# The value provided must be object_id#<GUID>, client_id#<GUID>, or mi_res_id#<IDENTITY_RESOURCE_ID>.
+# If this setting is not provided, the default identity will be used; see https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/managed-identities-faq#what-identity-will-imds-default-to-if-dont-specify-the-identity-in-the-request.
+MONITORING_GCS_AUTH_ID=mi_res_id#/subscriptions/d2a3f240-56f3-45bf-a0be-1d497a230cf4/resourceGroups/azsecpackautoconfigrg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/azsecpackautoconfigua-westus2

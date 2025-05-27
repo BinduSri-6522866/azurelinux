@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MonitoringManagement version="1.0" namespace="TestAzLinuxCI" eventVersion="1" timestamp="2014-10-01T20:00:00.000">
+  <Accounts>
+    <!-- <Account moniker="MySvcMDS" isDefault="true" autoKey="true" /> -->
+    <Account moniker="testazlinuxcidiag" isDefault="true" />
+    <Account moniker="testazlinuxcisecurity" alias="AzSecurityStore" />
+    <Account moniker="testazlinuxciaudit" alias="AuditStore" />
+  </Accounts>
+
+  <Schemas>
+    <Schema name="syslog">
+      <Column type="str" name="Facility" mdstype="mt:wstr" />
+      <Column type="str" name="Severity" mdstype="mt:int32" />
+      <Column type="str-rfc3339" name="EventTime" mdstype="mt:utc" />
+      <Column type="str" name="SendingHost" mdstype="mt:wstr" />
+      <Column type="str" name="Msg" mdstype="mt:wstr" />
+      <Column type="str" name="ProcessId" mdstype="mt:int32" />
+    </Schema>
+    <Schema name="azsecv1">
+      <Column type="str" name="Facility" mdstype="mt:wstr" />
+      <Column type="str" name="Severity" mdstype="mt:int32" />
+      <Column type="str-rfc3339" name="EventTime" mdstype="mt:utc" />
+      <Column type="str" name="SendingHost" mdstype="mt:wstr" />
+      <Column type="str" name="Msg" mdstype="mt:wstr" />
+    </Schema>
+    <Schema name="azsecv2">
+      <Column type="str" name="AzSecID" mdstype="mt:wstr" />
+      <Column type="str" name="ScanName" mdstype="mt:wstr" />
+      <Column type="str-rfc3339" name="EventTime" mdstype="mt:utc" />
+      <Column type="str" name="Data" mdstype="mt:wstr" />
+      <Column type="str" name="PartCount" mdstype="mt:int32" />
+      <Column type="str" name="PartIndex" mdstype="mt:int32" />
+    </Schema>
+  </Schemas>
+  <Sources>
+    <Source name="kern" schema="syslog" />
+    <Source name="auth" schema="syslog" />
+    <Source name="local1" schema="syslog" />
+    <Source name="authpriv" schema="syslog" />
+    <Source name="cron" schema="syslog" />
+    <Source name="user" schema="syslog" />
+    <Source name="daemon" schema="syslog" />
+    <Source name="syslog" schema="syslog" />
+    <Source name="heartbeat" schema="azsecv1" />
+    <Source name="baseline" schema="azsecv1" />
+    <Source name="software" schema="azsecv1" />
+    <Source name="clamav" schema="azsecv1" />
+    <Source name="scan_event" schema="azsecv2" />
+    <Source name="alert" schema="azsecv2" />
+    <Source name="audit" dynamic_schema="true" />
+  </Sources>
+
+  <!--
+  All events are specified within Events elements. Multiple events can specify the same
+  eventName; that will cause the corresponding rows to be written to the same table.
+  -->
+  <Events>
+
+    <!--
+    Heartbeat events supported without change.
+    -->
+    <HeartBeats>
+      <HeartBeat eventName="heartbeat" storeType="Central" duration="PT5M"
+                 sampleRateInSeconds="60" />
+    </HeartBeats>
+
+    <!--
+    Counter data is requested from the OMI daemon. A set of standardized cross-platform
+    providers, built by the System Center team, is included. Additional providers can be
+    built and injected at run-time.
+    
+    omiNamespace identifies the provider responsible for supplying the information.
+    
+    cqlQuery is a CIM Query Language expression which produces one or more columns of
+    data. Each row returned by the query is augmented by the usual identity columns
+    (Tenant, Role, RoleInstance) and inserted into the table.
+    
+    The stock OMI Server supports only CQL Basic Query, and is actually even more limited
+    than that. For example, while the LIKE operator is supported in WHERE clauses, the
+    OMI server does not handle even Basic Regular Expressions, nor any wildcarding at
+    all.
+    -->
+    <OMI>
+      <OMIQuery
+        eventName="FilesystemStats"
+        sampleRateInSeconds="300"
+        eventSas="mySASkey"
+        omiNamespace="root/scx"
+        cqlQuery="SELECT Name, AvailableSpace, FreeInodes FROM SCX_FileSystem"
+        />
+      <OMIQuery
+        eventName="CpuStats"
+        sampleRateInSeconds="300"
+        eventSas="mySASkey"
+        omiNamespace="root/scx"
+        cqlQuery="SELECT PercentProcessorTime, PercentIOWaitTime, PercentIdleTime FROM SCX_ProcessorStatisticalInformation WHERE Name=&quot;_TOTAL&quot;"
+        />
+      <OMIQuery
+        eventName="MemoryStats"
+        sampleRateInSeconds="300"
+        eventSas="mySASkey"
+        omiNamespace="root/scx"
+        cqlQuery="SELECT PercentAvailableMemory, PercentUsedSwap FROM SCX_MemoryStatisticalInformation"
+        />
+    </OMI>
+
+    <!--
+    MdsdEvents are sent by event providers directly to mdsd via loopback socket.
+    
+    Each event has a source; a single provider can send events from multiple sources, and
+    multiple providers can each send events from the same source.
+    
+    All events from a single source conform to the same schema, specified in a Schemas
+    element; the association between schema and source is made in a Sources element.
+    
+    Each MdsdEvent element contains routings for events from a single source.
+    
+    Each RouteEvent directs a set (or subset) of events to a destination table
+    (identified by eventName). If no Filter elements are specified, all events from the
+    source are added to the destination table; otherwise, the event is added only if all
+    Filters evaluate as true. If multiple RouteEvents using the same eventName match
+    (i.e. their Filters all evaluate as true), the event will be added to the table only
+    once.
+    
+    The upload frequency for a destination table is that of the highest priority event
+    routed to that table. Routing a high priority event to a table can cause normal
+    priority events to be delivered sooner than the next five-minute interval.
+    -->
+    <MdsdEvents>
+      <MdsdEventSource source="smtp">
+        <RouteEvent eventName="SendmailErrors" priority="High" account="myOtherSASkey">
+          <Filter name="Severity" op="ge" value="4" />
+        </RouteEvent>
+        <RouteEvent eventName="SendmailWarnings">
+          <Filter name="Severity" op="lt" value="4" />
+          <Filter name="Severity" op="ge" value="2" />
+        </RouteEvent>
+      </MdsdEventSource>
+    </MdsdEvents>
+
+
+
+  </Events>
+
+</MonitoringManagement>

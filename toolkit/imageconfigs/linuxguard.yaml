@@ -1,0 +1,233 @@
+storage:
+  bootType: efi
+
+  disks:
+    - partitionTableType: gpt
+      partitions:
+        - id: esp
+          type: esp
+          label: esp
+          size: 512M
+
+        - id: boot-a
+          type: linux-generic
+          size: 1G
+
+        - id: boot-b
+          type: linux-generic
+          size: 1G
+
+        - id: root-a
+          type: root
+          size: 2G
+
+        - id: root-b
+          type: root
+          size: 2G
+
+        - id: root-hash-a
+          type: root-verity
+          size: 128M
+
+        - id: root-hash-b
+          type: root-verity
+          size: 128M
+
+        - id: var-a
+          type: linux-generic
+          size: 3G
+
+        - id: var-b
+          type: linux-generic
+          size: 3G
+
+        - id: trident
+          type: linux-generic
+          label: trident
+          size: 512M
+
+        - id: home
+          type: linux-generic
+          label: home
+          size: 128M
+
+  verity:
+    - id: rootverity
+      name: root
+      dataDeviceId: root-a
+      hashDeviceId: root-hash-a
+      dataDeviceMountIdType: uuid
+      hashDeviceMountIdType: uuid
+      hashSignaturePath: /boot/root.hash.sig
+
+  filesystems:
+    - deviceId: esp
+      type: fat32
+      mountPoint:
+        idType: part-label
+        path: /boot/efi
+        options: umask=0077
+
+    - deviceId: boot-a
+      type: ext4
+      mountPoint:
+        idType: uuid
+        path: /boot
+
+    - deviceId: rootverity
+      type: ext4
+      mountPoint:
+        path: /
+        options: ro
+
+    - deviceId: var-a
+      type: ext4
+      mountPoint:
+        idType: uuid
+        path: /var
+        options: defaults,x-initrd.mount
+
+    - deviceId: trident
+      type: ext4
+      mountPoint:
+        idType: part-label
+        path: /var/lib/trident
+
+    - deviceId: home
+      type: ext4
+      mountPoint:
+        idType: part-label
+        path: /home
+
+os:
+  bootloader:
+    resetType: hard-reset
+  hostname: linuxguard-base
+
+  selinux:
+    mode: enforcing
+
+  uki:
+    kernels: auto
+  kernelCommandLine:
+    extraCommandLine:
+      - console=tty0
+      - console=tty1
+      - console=ttyS0
+      - rd.luks=0
+      - rd.hostonly=0
+
+  packages:
+    remove:
+      - kernel
+      - grub2-efi-binary
+    install:
+      - kernel-ipe
+      - openssh-server
+      - policycoreutils-python-utils
+      - selinux-policy
+      - selinux-policy-modules
+      - selinux-policy-ci
+      - setools-console
+      - veritysetup
+      - vim
+      - WALinuxAgent
+      - containerd-2.0.0-5.azl3
+      - ca-certificates
+      - wget
+      - syslog
+      - trident
+      - jq
+      - oci-signature-verification
+      - keyutils
+      - cri-tools
+      - cni
+      # - tardev-snapshotter
+      - erofs-utils
+      - trident-service
+      - netplan
+      # UKI
+      - systemd-boot
+
+  additionalFiles:
+    - source: files/no-password-prompt-on-sudo
+      destination: /etc/sudoers.d/no-password-prompt-on-sudo
+      permissions: "440"
+    # Geneva
+    - source: files/mdsd/mdsd.txt
+      destination: /etc/default/mdsd.txt
+      permissions: "640"
+    - source: files/mdsd/mdsd.xml
+      destination: /etc/default/mdsd.xml
+      permissions: "644"
+    # SELinux customizations
+    - source: files/selinux-ci-uki.semanage
+      destination: /etc/selinux/targeted/selinux-ci.semanage
+    - source: files/99-dhcp-eth0.network
+      destination: /etc/systemd/network/99-dhcp-eth0.network
+    # OCI signature verification trust policy file
+    - source: files/oci/trustpolicy.json
+      destination: /etc/verifiers/trustpolicy.json
+      permissions: "644"
+    - source: files/oci/notation_1.2.0_linux_amd64.tar.gz
+      destination: /root/notation-cli/notation_1.2.0_linux_amd64.tar.gz
+    # IPE support
+    - source: files/config.toml
+      destination: /etc/containerd/config.toml
+      permissions: "644"
+    # Verity signature verification support
+    - source: files/verity-signature/90mountbootpartition/module-setup.sh
+      destination: /usr/lib/dracut/modules.d/90mountbootpartition/module-setup.sh
+      permissions: "755"
+    - source: files/verity-signature/90mountbootpartition/mountbootpartition-generator.sh
+      destination: /usr/lib/dracut/modules.d/90mountbootpartition/mountbootpartition-generator.sh
+      permissions: "755"
+    - source: files/verity-signature/90mountbootpartition/mountbootpartition-genrules.sh
+      destination: /usr/lib/dracut/modules.d/90mountbootpartition/mountbootpartition-genrules.sh
+      permissions: "755"
+    - source: files/verity-signature/90mountbootpartition/mountbootpartition.sh
+      destination: /usr/lib/dracut/modules.d/90mountbootpartition/mountbootpartition.sh
+      permissions: "755"
+    - source: files/verity-signature/10-mountbootpartition.conf
+      destination: /etc/dracut.conf.d/10-mountbootpartition.conf
+      permissions: "644"
+
+  services:
+    enable:
+      - sshd
+      - docker
+      - systemd-networkd
+      - systemd-resolved
+      - img-authz-plugin
+      - trident
+
+  overlays:
+    - mountPoint: /etc
+      lowerDirs: [/etc]
+      upperDir: /var/lib/overlays/etc/upper
+      workDir: /var/lib/overlays/etc/work
+      mountDependencies: [/var]
+      isInitrdOverlay: true
+
+scripts:
+  postCustomization:
+    # Config AzureLinuxagent
+    - path: scripts/azlinuxagentconfig.sh
+    - path: scripts/duid-type-to-link-layer.sh
+    # Disable unused SELinux policy modules and configure SELinux policy for CI
+    - path: scripts/selinux-ci-config.sh
+    # Setup notation cli for OCI signature verification
+    - path: scripts/setup-notation-cli.sh
+    - path: scripts/cleanup-machineid.sh
+    - content: trident offline-initialize
+
+output:
+  artifacts:
+    items:
+    - shim
+    - systemd-boot
+    path: ./output
+
+previewFeatures:
+  - uki
+  - output-artifacts
