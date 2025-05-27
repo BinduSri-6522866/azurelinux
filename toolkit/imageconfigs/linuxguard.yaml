@@ -226,7 +226,9 @@ output:
     items:
     - shim
     - systemd-boot
-    path: ./output
+    # path: ./output
+  image:
+    format: vhd
 
 previewFeatures:
   - uki
