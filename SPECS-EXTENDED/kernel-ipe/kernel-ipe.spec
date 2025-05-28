@@ -453,7 +453,7 @@ echo "initrd of kernel %{uname_r} removed" >&2
 %{_sysconfdir}/bash_completion.d/bpftool
 
 %changelog
-* Tue May 27 2025 Rachel Menge <rachelmenge@microsoft.com> - 6.6.90.1-2
+* Wed May 28 2025 Rachel Menge <rachelmenge@microsoft.com> - 6.6.90.1-2
 - Prevent debuginfo from stripping BTF data
 
 * Fri May 23 2025 CBL-Mariner Servicing Account <cblmargh@microsoft.com> - 6.6.90.1-1
