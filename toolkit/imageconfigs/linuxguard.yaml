@@ -229,3 +229,7 @@ scripts:
 previewFeatures:
   # - output-artifacts
   - uki
+
+output:
+  image:
+    format: vhd
