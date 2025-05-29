@@ -121,7 +121,7 @@ os:
       - kernel
       - grub2-efi-binary
     install:
-      - kernel-ipe
+      # - kernel-ipe
       - openssh-server
       - curl
       - lvm2
