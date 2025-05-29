@@ -58,7 +58,6 @@ storage:
       hashDeviceId: root-hash-a
       dataDeviceMountIdType: uuid
       hashDeviceMountIdType: uuid
-      hashSignaturePath: /boot/root.hash.sig
 
   filesystems:
     - deviceId: esp
@@ -124,10 +123,15 @@ os:
     install:
       - kernel-ipe
       - openssh-server
+      - curl
+      - lvm2
+      # selinux
       - policycoreutils-python-utils
       - selinux-policy
       - selinux-policy-modules
       - selinux-policy-ci
+      - checkpolicy  
+      - secilc 
       - setools-console
       - veritysetup
       - vim
@@ -165,12 +169,6 @@ os:
       destination: /etc/selinux/targeted/selinux-ci.semanage
     - source: files/99-dhcp-eth0.network
       destination: /etc/systemd/network/99-dhcp-eth0.network
-    # OCI signature verification trust policy file
-    - source: files/oci/trustpolicy.json
-      destination: /etc/verifiers/trustpolicy.json
-      permissions: "644"
-    - source: files/oci/notation_1.2.0_linux_amd64.tar.gz
-      destination: /root/notation-cli/notation_1.2.0_linux_amd64.tar.gz
     # IPE support
     - source: files/config.toml
       destination: /etc/containerd/config.toml
@@ -211,25 +209,23 @@ os:
 
 scripts:
   postCustomization:
+    - path: scripts/performance-tuning.sh
     # Config AzureLinuxagent
     - path: scripts/azlinuxagentconfig.sh
     - path: scripts/duid-type-to-link-layer.sh
     # Disable unused SELinux policy modules and configure SELinux policy for CI
     - path: scripts/selinux-ci-config.sh
     # Setup notation cli for OCI signature verification
-    - path: scripts/setup-notation-cli.sh
     - path: scripts/cleanup-machineid.sh
     - content: trident offline-initialize
 
-output:
-  artifacts:
-    items:
-    - shim
-    - systemd-boot
-    # path: ./output
-  image:
-    format: vhd
+# output:
+#   artifacts:
+#     items:
+#       - verity-hash
+#       - ukis
+#     path: ./output
 
 previewFeatures:
+  # - output-artifacts
   - uki
-  - output-artifacts
