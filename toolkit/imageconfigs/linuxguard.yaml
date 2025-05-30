@@ -136,7 +136,7 @@ os:
       - veritysetup
       - vim
       - WALinuxAgent
-      - containerd-2.0.0-5.azl3
+      - containerd2
       - ca-certificates
       - wget
       - syslog
