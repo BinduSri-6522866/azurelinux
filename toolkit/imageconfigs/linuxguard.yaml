@@ -140,7 +140,7 @@ os:
       - ca-certificates
       - wget
       - syslog
-      - trident
+      # - trident
       - jq
       - oci-signature-verification
       - keyutils
@@ -148,7 +148,7 @@ os:
       - cni
       # - tardev-snapshotter
       - erofs-utils
-      - trident-service
+      # - trident-service
       - netplan
       # UKI
       - systemd-boot
