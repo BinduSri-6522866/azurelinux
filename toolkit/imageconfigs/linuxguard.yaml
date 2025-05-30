@@ -197,7 +197,7 @@ os:
       - systemd-networkd
       - systemd-resolved
       - img-authz-plugin
-      - trident
+      # - trident
 
   overlays:
     - mountPoint: /etc
@@ -217,7 +217,7 @@ scripts:
     # - path: scripts/selinux-ci-config.sh
     # Setup notation cli for OCI signature verification
     - path: scripts/cleanup-machineid.sh
-    - content: trident offline-initialize
+    # - content: trident offline-initialize
 
 # output:
 #   artifacts:
