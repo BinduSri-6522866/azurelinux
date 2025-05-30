@@ -117,7 +117,7 @@ os:
       - rd.hostonly=0
 
   packages:
-    remove:
+    # remove:
       # - kernel
       # - grub2-efi-binary
     install:
@@ -214,7 +214,7 @@ scripts:
     - path: scripts/azlinuxagentconfig.sh
     - path: scripts/duid-type-to-link-layer.sh
     # Disable unused SELinux policy modules and configure SELinux policy for CI
-    - path: scripts/selinux-ci-config.sh
+    # - path: scripts/selinux-ci-config.sh
     # Setup notation cli for OCI signature verification
     - path: scripts/cleanup-machineid.sh
     - content: trident offline-initialize
