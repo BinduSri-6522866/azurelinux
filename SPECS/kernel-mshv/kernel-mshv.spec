@@ -7,6 +7,11 @@
 %define archdir x86
 %define config_source %{SOURCE1}
 %endif
+%ifarch aarch64
+%define arch arm64
+%define archdir arm64
+%define config_source %{SOURCE1}
+%endif
 
 Summary:        Mariner kernel that has MSHV Host support
 Name:           kernel-mshv
@@ -21,7 +26,7 @@ Source1:        config
 Source2:        cbl-mariner-ca-20211013.pem
 Source3:        50_mariner_mshv.cfg
 Source4:        50_mariner_mshv_menuentry
-ExclusiveArch:  x86_64
+
 BuildRequires:  audit-devel
 BuildRequires:  bash
 BuildRequires:  bc
@@ -82,7 +87,7 @@ This package contains the 'perf' performance analysis tools for MSHV kernel.
 %autosetup -p1
 
 make mrproper
-cp %{SOURCE1} .config
+cp %{config_source} .config
 
 # Add CBL-Mariner cert into kernel's trusted keyring
 cp %{SOURCE2} certs/mariner.pem
