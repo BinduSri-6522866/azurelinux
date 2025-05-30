@@ -142,7 +142,7 @@ os:
       - syslog
       # - trident
       - jq
-      - oci-signature-verification
+      # - oci-signature-verification
       - keyutils
       - cri-tools
       - cni
