@@ -119,7 +119,7 @@ os:
   packages:
     remove:
       # - kernel
-      - grub2-efi-binary
+      # - grub2-efi-binary
     install:
       # - kernel-ipe
       - openssh-server
@@ -127,8 +127,8 @@ os:
       - lvm2
       # selinux
       - policycoreutils-python-utils
-      # - selinux-policy
-      # - selinux-policy-modules
+      - selinux-policy
+      - selinux-policy-modules
       # - selinux-policy-ci
       - checkpolicy  
       - secilc 
