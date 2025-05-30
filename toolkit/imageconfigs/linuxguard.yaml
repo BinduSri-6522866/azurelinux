@@ -118,18 +118,18 @@ os:
 
   packages:
     remove:
-      - kernel
+      # - kernel
       - grub2-efi-binary
     install:
-      - kernel-ipe
+      # - kernel-ipe
       - openssh-server
       - curl
       - lvm2
       # selinux
       - policycoreutils-python-utils
-      - selinux-policy
-      - selinux-policy-modules
-      - selinux-policy-ci
+      # - selinux-policy
+      # - selinux-policy-modules
+      # - selinux-policy-ci
       - checkpolicy  
       - secilc 
       - setools-console
