@@ -122,36 +122,42 @@ os:
       - grub2-efi-binary
     install:
       - kernel-ipe
-      # - openssh-server
-      # - curl
-      # - lvm2
-      # # selinux
-      # - policycoreutils-python-utils
-      # - selinux-policy
-      # - selinux-policy-modules
-      # # - selinux-policy-ci
-      # - checkpolicy  
-      # - secilc 
-      # - setools-console
-      # - veritysetup
-      # - vim
-      # - WALinuxAgent
-      # # - containerd2
-      # - ca-certificates
-      # - wget
-      # - syslog
-      # # - trident
-      # - jq
-      # # - oci-signature-verification
-      # - keyutils
-      # - cri-tools
-      # - cni
-      # # - tardev-snapshotter
-      # - erofs-utils
-      # # - trident-service
-      # - netplan
-      # # UKI
-      # - systemd-boot
+      - openssh-server
+      - curl
+      - lvm2
+      # selinux
+      - policycoreutils-python-utils
+      - selinux-policy
+      - selinux-policy-modules
+      # - selinux-policy-ci
+      - checkpolicy  
+      - secilc 
+      - setools-console
+      - veritysetup
+      - vim
+      - WALinuxAgent
+      - containerd2
+      - ca-certificates
+      - wget
+      - syslog
+      # - trident
+      - jq
+      # - oci-signature-verification
+      - keyutils
+      - cri-tools
+      - cni
+      # - tardev-snapshotter
+      - erofs-utils
+      # - trident-service
+      - netplan
+      # UKI
+      - systemd-boot
+      - efibootmgr # added after removing trident
+      # hyperv
+      - dracut-hyperv
+      - hyperv-daemons
+      # cloud-init
+      - cloud-init
 
   additionalFiles:
     - source: files/no-password-prompt-on-sudo
@@ -165,10 +171,16 @@ os:
       destination: /etc/default/mdsd.xml
       permissions: "644"
     # SELinux customizations
-    - source: files/selinux-ci-uki.semanage
-      destination: /etc/selinux/targeted/selinux-ci.semanage
+    # - source: files/selinux-ci-uki.semanage
+    #   destination: /etc/selinux/targeted/selinux-ci.semanage  # provided by selinux-policy-ci
     - source: files/99-dhcp-eth0.network
       destination: /etc/systemd/network/99-dhcp-eth0.network
+    # OCI signature verification trust policy file
+    # - source: files/oci/trustpolicy.json
+    #   destination: /etc/verifiers/trustpolicy.json
+    #   permissions: "644"
+    # - source: files/oci/notation_1.2.0_linux_amd64.tar.gz
+    #   destination: /root/notation-cli/notation_1.2.0_linux_amd64.tar.gz
     # IPE support
     - source: files/config.toml
       destination: /etc/containerd/config.toml
@@ -193,19 +205,19 @@ os:
   services:
     enable:
       - sshd
-      - docker
+      # - docker
       - systemd-networkd
       - systemd-resolved
-      - img-authz-plugin
+      # - img-authz-plugin
       # - trident
 
-  overlays:
-    - mountPoint: /etc
-      lowerDirs: [/etc]
-      upperDir: /var/lib/overlays/etc/upper
-      workDir: /var/lib/overlays/etc/work
-      mountDependencies: [/var]
-      isInitrdOverlay: true
+  # overlays:
+  #   - mountPoint: /etc
+  #     lowerDirs: [/etc]
+  #     upperDir: /var/lib/overlays/etc/upper
+  #     workDir: /var/lib/overlays/etc/work
+  #     mountDependencies: [/var]
+  #     isInitrdOverlay: true
 
 scripts:
   postCustomization:
